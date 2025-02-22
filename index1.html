@@ -1,71 +1,593 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tap Clicker Game</title>
-    <style>
-        body {
-            text-align: center;
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            padding: 20px;
-        }
-        .game-container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            display: inline-block;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        #click-button {
-            font-size: 20px;
-            padding: 15px;
-            margin-top: 10px;
-            cursor: pointer;
-        }
-        .store {
-            margin-top: 20px;
-        }
-        .store button {
-            margin-top: 10px;
-            padding: 10px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ultimate Tap Clicker Game</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+      margin: 0;
+    }
+    .game-container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      display: inline-block;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      margin-top: 50px;
+    }
+    #click-button {
+      font-size: 20px;
+      padding: 15px 25px;
+      margin-top: 15px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: white;
+      transition: background-color 0.3s;
+    }
+    #click-button:hover {
+      background-color: #0056b3;
+    }
+    .stats {
+      margin-top: 10px;
+    }
+    .stats p {
+      margin: 4px 0;
+    }
+    .store {
+      margin-top: 20px;
+    }
+    .upgrade-item {
+      margin-bottom: 10px;
+    }
+    .store button {
+      margin-top: 5px;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background-color: #28a745;
+      color: white;
+      transition: background-color 0.3s;
+    }
+    .store button:hover {
+      background-color: #218838;
+    }
+    .leaderboard {
+      margin-top: 20px;
+    }
+    /* Coin pop animation */
+    .coin {
+      position: absolute;
+      font-weight: bold;
+      color: #ffa500;
+      pointer-events: none;
+      animation: pop 1s forwards ease-out;
+      z-index: 9999;
+    }
+    @keyframes pop {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      50% {
+        opacity: 0.9;
+        transform: translateY(-30px) scale(1.2);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.8);
+      }
+    }
+    /* Screen shake animation */
+    @keyframes shake {
+      0% { transform: translate(0, 0) }
+      20% { transform: translate(-5px, 0) }
+      40% { transform: translate(5px, 0) }
+      60% { transform: translate(-5px, 0) }
+      80% { transform: translate(5px, 0) }
+      100% { transform: translate(0, 0) }
+    }
+    .shake {
+      animation: shake 0.3s;
+    }
+
+    /* Daily Spin Popup */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0s, opacity 0.3s;
+    }
+    .overlay.show {
+      visibility: visible;
+      opacity: 1;
+    }
+    .spin-container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    #spin-wheel {
+      width: 100px;
+      height: 100px;
+      margin: 10px auto;
+      background: #ffcb05;
+      border: 5px solid #333;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 1s;
+    }
+  </style>
 </head>
+
 <body>
-    <div class="game-container">
-        <h1>Tap Clicker Game</h1>
-        <p>Coins: <span id="score">0</span></p>
-        <button id="click-button">Tap to Earn Coins</button>
-        
-        <div class="store">
-            <h2>Upgrades</h2>
-            <button id="upgrade" onclick="buyUpgrade()">Upgrade Click (+1 per tap) - Cost: <span id="upgrade-cost">10</span> Coins</button>
-        </div>
+  <div class="game-container" id="gameContainer">
+    <h1>Ultimate Tap Clicker Game</h1>
+    <div class="stats">
+      <p>Coins: <span id="score">0</span></p>
+      <p>Coins per Click: <span id="clickValue">1</span></p>
+      <p>High Score (Local): <span id="highScore">0</span></p>
     </div>
 
-    <script>
-        let score = 0;
-        let clickValue = 1;
-        let upgradeCost = 10;
-        
-        document.getElementById("click-button").addEventListener("click", function() {
-            score += clickValue;
-            document.getElementById("score").innerText = score;
-        });
-        
-        function buyUpgrade() {
-            if (score >= upgradeCost) {
-                score -= upgradeCost;
-                clickValue += 1;
-                upgradeCost = Math.floor(upgradeCost * 1.5);
-                document.getElementById("score").innerText = score;
-                document.getElementById("upgrade-cost").innerText = upgradeCost;
-            } else {
-                alert("Not enough coins!");
-            }
+    <button id="click-button">Tap to Earn Coins</button>
+
+    <div class="store">
+      <h2>Upgrades & Shop</h2>
+      <!-- Upgrade 1: Increase Click Value -->
+      <div class="upgrade-item">
+        <button onclick="buyClickUpgrade()">
+          +1 Coin/Click (Cost: <span id="clickUpgradeCost">10</span>)
+        </button>
+      </div>
+      <!-- Upgrade 2: Auto-Clicker -->
+      <div class="upgrade-item">
+        <button onclick="buyAutoClicker()">
+          Auto-Clicker +1/sec (Cost: <span id="autoClickCost">25</span>)
+        </button>
+      </div>
+      <!-- Upgrade 3: Frenzy Mode -->
+      <div class="upgrade-item">
+        <button onclick="buyFrenzy()">
+          Frenzy Mode x5 (Cost: <span id="frenzyCost">50</span>)
+        </button>
+      </div>
+      <!-- Upgrade 4: Double Click Upgrade -->
+      <div class="upgrade-item">
+        <button onclick="buyDoubleClick()">
+          Double Click (Cost: <span id="doubleClickCost">100</span>)
+        </button>
+      </div>
+      <!-- Prestige Button -->
+      <div class="upgrade-item">
+        <button onclick="attemptPrestige()">
+          Prestige (Requires 1,000,000 Coins)
+        </button>
+      </div>
+    </div>
+
+    <button onclick="openDailySpin()" style="margin-top:20px;">Daily Spin</button>
+
+    <div class="leaderboard">
+      <h2>Achievements</h2>
+      <ul id="achievementsList" style="list-style:none; padding:0;"></ul>
+    </div>
+  </div>
+
+  <!-- Daily Spin Overlay -->
+  <div class="overlay" id="spinOverlay">
+    <div class="spin-container">
+      <h2>Daily Spin</h2>
+      <div id="spin-wheel" onclick="spinWheel()">SPIN</div>
+      <p id="spinResult"></p>
+      <button onclick="closeDailySpin()">Close</button>
+    </div>
+  </div>
+
+  <!-- Sound Effects (optional) -->
+  <audio id="click-sound" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
+  <audio id="upgrade-sound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
+  <audio id="error-sound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+
+  <script>
+    /********************
+     *   CORE STATS   *
+     ********************/
+    let score = 0;
+    let baseClickValue = 1;
+    let clickValue = baseClickValue; // final clickValue = baseClickValue * prestigeMultiplier
+
+    let clickUpgradeCost = 10;
+
+    let autoClickers = 0;
+    let autoClickCost = 25;
+
+    let frenzyActive = false;
+    let frenzyCost = 50;
+
+    let doubleClickCost = 100;
+
+    // Prestige System
+    let prestigeMultiplier = 1;
+    let totalPrestige = 0; // each prestige +1
+
+    // High Score (Local)
+    let highScore = 0;
+
+    // Achievements array
+    let achievements = [
+      {
+        id: 1,
+        name: "First 100 Coins",
+        condition: () => score >= 100,
+        unlocked: false,
+        reward: 50 // bonus coins
+      },
+      {
+        id: 2,
+        name: "500 Coins",
+        condition: () => score >= 500,
+        unlocked: false,
+        reward: 200
+      },
+      {
+        id: 3,
+        name: "1,000 Coins",
+        condition: () => score >= 1000,
+        unlocked: false,
+        reward: 500
+      },
+      {
+        id: 4,
+        name: "Golden Click (5,000 Coins)",
+        condition: () => score >= 5000,
+        unlocked: false,
+        reward: "golden"
+      }
+    ];
+
+    // daily spin usage
+    let spinUsed = false;
+
+    // load local storage data (like highScore) if available
+    window.onload = () => {
+      const storedHighScore = localStorage.getItem("highScore");
+      if (storedHighScore) {
+        highScore = parseInt(storedHighScore, 10);
+      }
+      updateUI();
+    };
+
+    // Update UI
+    function updateUI() {
+      document.getElementById("score").innerText = score;
+      document.getElementById("clickValue").innerText = Math.floor(clickValue);
+      document.getElementById("clickUpgradeCost").innerText = clickUpgradeCost;
+      document.getElementById("autoClickCost").innerText = autoClickCost;
+      document.getElementById("frenzyCost").innerText = frenzyCost;
+      document.getElementById("doubleClickCost").innerText = doubleClickCost;
+      document.getElementById("highScore").innerText = highScore;
+
+      // Check for new high score
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem("highScore", highScore);
+      }
+
+      // Check achievements
+      checkAchievements();
+      updateAchievementsList();
+    }
+
+    /***********************
+     *   HELPER FUNCTIONS  *
+     ***********************/
+
+    // Play sound by ID
+    function playSound(id) {
+      const sound = document.getElementById(id);
+      if (sound) {
+        sound.currentTime = 0;
+        sound.play();
+      }
+    }
+
+    // Coin pop animation
+    function showCoinPop(x, y, amount) {
+      const coin = document.createElement("div");
+      coin.className = "coin";
+      coin.textContent = `+${amount}`;
+      // Position coin near the click location
+      coin.style.left = x + "px";
+      coin.style.top = y + "px";
+      document.body.appendChild(coin);
+
+      // Remove coin after animation
+      coin.addEventListener("animationend", () => {
+        coin.remove();
+      });
+    }
+
+    // Screen shake
+    let clickCount = 0;
+    let lastClickTime = 0;
+    function handleClickSpeed() {
+      const now = Date.now();
+      if (now - lastClickTime < 300) {
+        clickCount++;
+      } else {
+        clickCount = 1;
+      }
+      lastClickTime = now;
+
+      if (clickCount >= 5) {
+        screenShake();
+        clickCount = 0; // reset
+      }
+    }
+
+    function screenShake() {
+      const container = document.getElementById("gameContainer");
+      container.classList.add("shake");
+      setTimeout(() => {
+        container.classList.remove("shake");
+      }, 300);
+    }
+
+    /*******************************
+     *   MAIN GAME LOGIC: CLICK   *
+     *******************************/
+
+    document.getElementById("click-button").addEventListener("click", function(e) {
+      handleClickSpeed();
+      const finalClick = Math.floor(clickValue);
+      score += finalClick;
+      updateUI();
+
+      // Show coin pop at click location
+      const rect = e.target.getBoundingClientRect();
+      // center pop around the button
+      const offsetX = rect.left + rect.width / 2;
+      const offsetY = rect.top;
+      showCoinPop(offsetX, offsetY, finalClick);
+
+      // Play click sound
+      playSound("click-sound");
+    });
+
+    /*****************************
+     *   UPGRADES & SHOP LOGIC  *
+     *****************************/
+
+    // Upgrade 1: Increase Click Value
+    function buyClickUpgrade() {
+      if (score >= clickUpgradeCost) {
+        score -= clickUpgradeCost;
+        baseClickValue += 1; // Increase base
+        clickUpgradeCost = Math.floor(clickUpgradeCost * 1.5);
+        updateClickValue();
+        updateUI();
+        playSound("upgrade-sound");
+      } else {
+        playSound("error-sound");
+        alert("Not enough coins!");
+      }
+    }
+
+    // Upgrade 2: Auto Clicker
+    function buyAutoClicker() {
+      if (score >= autoClickCost) {
+        score -= autoClickCost;
+        autoClickers += 1;
+        autoClickCost = Math.floor(autoClickCost * 1.5);
+        updateUI();
+        playSound("upgrade-sound");
+      } else {
+        playSound("error-sound");
+        alert("Not enough coins!");
+      }
+    }
+
+    // Auto-Clicker loop
+    setInterval(() => {
+      if (autoClickers > 0) {
+        score += autoClickers;
+        updateUI();
+      }
+    }, 1000);
+
+    // Upgrade 3: Frenzy Mode
+    function buyFrenzy() {
+      if (!frenzyActive && score >= frenzyCost) {
+        frenzyActive = true;
+        score -= frenzyCost;
+        clickValue *= 5; // 5x multiplier
+        updateUI();
+        playSound("upgrade-sound");
+
+        setTimeout(() => {
+          clickValue /= 5;
+          frenzyActive = false;
+          updateUI();
+        }, 10000); // 10 seconds
+      } else if (frenzyActive) {
+        alert("Frenzy is already active!");
+      } else {
+        playSound("error-sound");
+        alert("Not enough coins!");
+      }
+    }
+
+    // Upgrade 4: Double Click
+    function buyDoubleClick() {
+      if (score >= doubleClickCost) {
+        score -= doubleClickCost;
+        baseClickValue *= 2; // permanently double the base click value
+        doubleClickCost = Math.floor(doubleClickCost * 2);
+        updateClickValue();
+        updateUI();
+        playSound("upgrade-sound");
+      } else {
+        playSound("error-sound");
+        alert("Not enough coins!");
+      }
+    }
+
+    // Update final clickValue after base changes or prestige
+    function updateClickValue() {
+      clickValue = baseClickValue * prestigeMultiplier;
+    }
+
+    // Attempt Prestige
+    function attemptPrestige() {
+      if (score >= 1000000) {
+        doPrestige();
+      } else {
+        alert("You need 1,000,000 coins to Prestige!");
+      }
+    }
+
+    function doPrestige() {
+      // Increase totalPrestige
+      totalPrestige++;
+      // Increase multiplier by 20% each prestige
+      prestigeMultiplier = 1 + 0.2 * totalPrestige;
+
+      // Reset stats except totalPrestige
+      score = 0;
+      baseClickValue = 1;
+      clickValue = baseClickValue * prestigeMultiplier;
+
+      clickUpgradeCost = 10;
+      autoClickers = 0;
+      autoClickCost = 25;
+      frenzyActive = false;
+      frenzyCost = 50;
+      doubleClickCost = 100;
+
+      alert("Prestige complete! Now you have a x" + prestigeMultiplier.toFixed(2) + " permanent multiplier.");
+      updateUI();
+    }
+
+    /***********************
+     *   ACHIEVEMENTS     *
+     ***********************/
+
+    function checkAchievements() {
+      achievements.forEach((ach) => {
+        if (!ach.unlocked && ach.condition()) {
+          ach.unlocked = true;
+          if (typeof ach.reward === "number") {
+            // give coin reward
+            score += ach.reward;
+            alert(`Achievement unlocked: ${ach.name}! You earned +${ach.reward} coins.`);
+          } else if (ach.reward === "golden") {
+            // maybe double clickValue or something special
+            baseClickValue += 5; // big boost
+            updateClickValue();
+            alert(`Achievement unlocked: ${ach.name}! Golden Click +5 base click!`);
+          }
+          playSound("upgrade-sound");
+          updateUI();
         }
-    </script>
+      });
+    }
+
+    function updateAchievementsList() {
+      const listEl = document.getElementById("achievementsList");
+      listEl.innerHTML = "";
+      achievements.forEach((ach) => {
+        const li = document.createElement("li");
+        li.textContent = ach.name + (ach.unlocked ? " (Unlocked)" : " (Locked)");
+        listEl.appendChild(li);
+      });
+    }
+
+    /***********************
+     *   DAILY SPIN GAME  *
+     ***********************/
+
+    function openDailySpin() {
+      if (spinUsed) {
+        alert("You already used your spin today!");
+        return;
+      }
+      document.getElementById("spinOverlay").classList.add("show");
+    }
+
+    function closeDailySpin() {
+      document.getElementById("spinOverlay").classList.remove("show");
+    }
+
+    function spinWheel() {
+      // rotate the wheel visually
+      const wheel = document.getElementById("spin-wheel");
+      wheel.style.transform = "rotate(" + (3600 + Math.random() * 360) + "deg)";
+
+      // after 1 second, decide reward
+      setTimeout(() => {
+        const spinResult = document.getElementById("spinResult");
+        // random reward logic
+        const rewardOptions = [
+          { text: "+50 Coins", value: 50 },
+          { text: "+100 Coins", value: 100 },
+          { text: "+200 Coins", value: 200 },
+          { text: "+5 Base Click", type: "clickBoost" },
+          { text: "Frenzy Bonus", type: "frenzy" },
+        ];
+        const reward = rewardOptions[Math.floor(Math.random() * rewardOptions.length)];
+
+        if (reward.value) {
+          score += reward.value;
+          spinResult.innerText = `You won ${reward.text}!`;
+        } else if (reward.type === "clickBoost") {
+          baseClickValue += 5;
+          updateClickValue();
+          spinResult.innerText = "You got +5 Base Click!";
+        } else if (reward.type === "frenzy") {
+          // immediate frenzy
+          if (!frenzyActive) {
+            frenzyActive = true;
+            clickValue *= 5;
+            setTimeout(() => {
+              clickValue /= 5;
+              frenzyActive = false;
+              updateUI();
+            }, 10000);
+            spinResult.innerText = "Frenzy Mode Activated! (10s)";
+          } else {
+            spinResult.innerText = "Already in Frenzy! No effect.";
+          }
+        }
+        spinUsed = true;
+        updateUI();
+        playSound("upgrade-sound");
+      }, 1000);
+    }
+
+    // final initialization
+    updateClickValue();
+    updateUI();
+  </script>
 </body>
 </html>
