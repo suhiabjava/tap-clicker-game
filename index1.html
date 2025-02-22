@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tap Clicker Game</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .game-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        #click-button {
+            font-size: 20px;
+            padding: 15px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        .store {
+            margin-top: 20px;
+        }
+        .store button {
+            margin-top: 10px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Tap Clicker Game</h1>
+        <p>Coins: <span id="score">0</span></p>
+        <button id="click-button">Tap to Earn Coins</button>
+        
+        <div class="store">
+            <h2>Upgrades</h2>
+            <button id="upgrade" onclick="buyUpgrade()">Upgrade Click (+1 per tap) - Cost: <span id="upgrade-cost">10</span> Coins</button>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let clickValue = 1;
+        let upgradeCost = 10;
+        
+        document.getElementById("click-button").addEventListener("click", function() {
+            score += clickValue;
+            document.getElementById("score").innerText = score;
+        });
+        
+        function buyUpgrade() {
+            if (score >= upgradeCost) {
+                score -= upgradeCost;
+                clickValue += 1;
+                upgradeCost = Math.floor(upgradeCost * 1.5);
+                document.getElementById("score").innerText = score;
+                document.getElementById("upgrade-cost").innerText = upgradeCost;
+            } else {
+                alert("Not enough coins!");
+            }
+        }
+    </script>
+</body>
+</html>
